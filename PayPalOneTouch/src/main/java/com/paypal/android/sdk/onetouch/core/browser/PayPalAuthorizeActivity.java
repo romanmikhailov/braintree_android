@@ -10,6 +10,18 @@ public class PayPalAuthorizeActivity extends Activity {
 
     public static final String REDIRECT_URI_SCHEME_ARG = "PayPalAuthorizeActivity.RedirectUri";
 
+    private String cancelUrl;
+    private String baToken;
+
+    @Override
+    public void onBackPressed() {
+        Uri uri = Uri.parse(cancelUrl)
+                .buildUpon()
+                .appendQueryParameter("ba_token", baToken)
+                .build();
+        finishWithResult(uri);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,6 +29,9 @@ public class PayPalAuthorizeActivity extends Activity {
         FrameLayout rootView = (FrameLayout) findViewById(android.R.id.content);
 
         String uriScheme = getIntent().getStringExtra(REDIRECT_URI_SCHEME_ARG);
+        Uri uri = getIntent().getData();
+        cancelUrl = uri.getQueryParameter("cancel_url");
+        baToken = uri.getQueryParameter("ba_token");
 
         PayPalAuthorizeWebView payPalAuthorizeWebView = new PayPalAuthorizeWebView(this);
         payPalAuthorizeWebView.init(this, uriScheme);
@@ -26,7 +41,11 @@ public class PayPalAuthorizeActivity extends Activity {
     }
 
     public void finishWithResult(String url) {
-        setResult(Activity.RESULT_OK,  new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        finishWithResult(Uri.parse(url));
+    }
+
+    private void finishWithResult(Uri url) {
+        setResult(Activity.RESULT_OK,  new Intent(Intent.ACTION_VIEW, url));
         finish();
     }
 }
