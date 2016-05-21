@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.FrameLayout;
 
 public class PayPalAuthorizeActivity extends Activity {
@@ -15,10 +16,11 @@ public class PayPalAuthorizeActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        Uri uri = Uri.parse(cancelUrl)
-                .buildUpon()
-                .appendQueryParameter("ba_token", baToken)
-                .build();
+        Uri.Builder builder = Uri.parse(cancelUrl).buildUpon();
+        if (!TextUtils.isEmpty(baToken)) {
+            builder.appendQueryParameter("ba_token", baToken);
+        }
+        Uri uri = builder.build();
         finishWithResult(uri);
     }
 
@@ -30,7 +32,10 @@ public class PayPalAuthorizeActivity extends Activity {
 
         String uriScheme = getIntent().getStringExtra(REDIRECT_URI_SCHEME_ARG);
         Uri uri = getIntent().getData();
-        cancelUrl = uri.getQueryParameter("cancel_url");
+        cancelUrl = uri.getQueryParameter("x-cancel");
+        if (TextUtils.isEmpty(cancelUrl)) {
+            cancelUrl = uri.getQueryParameter("cancel_url");
+        }
         baToken = uri.getQueryParameter("ba_token");
 
         PayPalAuthorizeWebView payPalAuthorizeWebView = new PayPalAuthorizeWebView(this);
